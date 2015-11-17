@@ -10,6 +10,7 @@ import ujaen.git.ppt.smtp.RFC5321;
 import ujaen.git.ppt.smtp.RFC5322;
 import ujaen.git.ppt.smtp.SMTPMessage;
 
+//algo
 public class Connection implements Runnable, RFC5322 {
 
 	public static final int S_HELO = 0;
