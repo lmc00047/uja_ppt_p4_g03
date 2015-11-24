@@ -14,6 +14,12 @@ import ujaen.git.ppt.smtp.SMTPMessage;
 public class Connection implements Runnable, RFC5322 {
 
 	public static final int S_HELO = 0;
+	public static final int S_EHLO = 1;
+	public static final int S_MAIL = 2;
+	public static final int S_RCPT = 3;
+	public static final int S_DATA = 4;
+	public static final int S_RSET = 5;
+	public static final int S_QUIT = 6;
 
 	protected Socket mSocket;
 	protected int mEstado = S_HELO;;
@@ -30,7 +36,6 @@ public class Connection implements Runnable, RFC5322 {
 
 		String inputData = null;
 		String outputData = "";
-		
 
 		if (mSocket != null) {
 			try {
@@ -41,23 +46,39 @@ public class Connection implements Runnable, RFC5322 {
 						new InputStreamReader(mSocket.getInputStream()));
 
 				// Envío del mensaje de bienvenida
-				String response = RFC5321.getReply(RFC5321.R_220) + SP + RFC5321.MSG_WELCOME
-						+ RFC5322.CRLF;
+				String response = RFC5321.getReply(RFC5321.R_220) + SP
+						+ RFC5321.MSG_WELCOME + RFC5322.CRLF;
 				output.write(response.getBytes());
 				output.flush();
 
-				while (!mFin && ((inputData = input.readLine()) != null)) {
-					
+				while (!mFin && ((inputData = input.readLine()) != null)){
+
 					System.out.println("Servidor [Recibido]> " + inputData);
-				
-					
-					// Todo análisis del comando recibido
+
+					// TODO análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
 
 					// TODO: Máquina de estados del protocolo
 					switch (mEstado) {
 					case S_HELO:
-						
+						if (inputData.compareTo("HELO") == 0){
+							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ "Welcome" + CRLF;
+							mEstado = S_MAIL;
+						}
+						else{
+							
+						}
+						break;
+					case S_MAIL:
+						break;
+					case S_RCPT:
+						break;
+					case S_DATA:
+						break;
+					case S_RSET:
+						break;
+					case S_QUIT:
 						break;
 					default:
 						break;
@@ -65,11 +86,10 @@ public class Connection implements Runnable, RFC5322 {
 
 					// TODO montar la respuesta
 					// El servidor responde con lo recibido
-					outputData = RFC5321.getReply(RFC5321.R_220) + SP + inputData + CRLF;
 					output.write(outputData.getBytes());
 					output.flush();
 
-				}
+				}//Fin del while
 				System.out.println("Servidor [Conexión finalizada]> "
 						+ mSocket.getInetAddress().toString() + ":"
 						+ mSocket.getPort());
