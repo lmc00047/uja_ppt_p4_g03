@@ -19,7 +19,7 @@ public class SMTPMessage implements RFC5322 {
 
 		if(data.length()>998)
 		{
-			mHasError=true;
+			mHasError = true;
 			
 		}
 		else
@@ -35,11 +35,18 @@ public class SMTPMessage implements RFC5322 {
 	protected boolean parseCommand(String data) {
 
 		if (data.indexOf(":") > 0) {
-			String[] commandParts = data.split(":");// Se busca los comandos con
-													// varias palabras MAIL
-													// FROM:
+			String[] commandParts = data.split(":");// Se busca los comandos con varias palabras MAIL, FROM:
+			//TODO separar el comando para ver si hay errores
+			//No se recibe el comando HELO
+			if(commandParts[0] != "HELO"){
+				System.out.println("no helo");
+			}
+			//Se recibe el comando MAIL:
+			if(commandParts[0] == "MAIL FROM"){
+				System.out.println("no mail");
+			}
 		}
-
+		
 		return false;
 	}
 

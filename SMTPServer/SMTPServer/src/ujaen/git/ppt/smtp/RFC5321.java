@@ -38,8 +38,8 @@ public class RFC5321 {
 	public static final String[] SMPT_ERROR_MESSAGES ={ "Error de sintaxis","Secuencia errónea de comandos","Usuario no local"};
 	
 	/** index to the list os error strings*/
-	public static final int E_500_SINTAXERROR=0;
-	public static final int E_503_BADSEQUENCE=1;
+	public static final int E_500_SINTAXERROR = 0;
+	public static final int E_503_BADSEQUENCE = 1;
 	public static final int E_551_USERNOTLOCAL = 2;
 	
 	

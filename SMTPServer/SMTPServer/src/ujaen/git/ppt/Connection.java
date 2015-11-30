@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.Socket;
 import java.net.SocketException;
+
 import ujaen.git.ppt.smtp.RFC5321;
 import ujaen.git.ppt.smtp.RFC5322;
 import ujaen.git.ppt.smtp.SMTPMessage;
@@ -63,14 +64,24 @@ public class Connection implements Runnable, RFC5322 {
 					case S_HELO:
 						if (inputData.compareTo("HELO") == 0){
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
-									+ "Welcome" + CRLF;
+									+ "Welcome " + Server.TCP_CLIENT_IP +
+									", pleased to meet you"+ CRLF;
 							mEstado = S_MAIL;
 						}
 						else{
-							
+							outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
+									+ CRLF;
 						}
 						break;
 					case S_MAIL:
+						if (inputData.compareTo("MAIL FROM:") == 0){
+							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ "Algo" + CRLF;
+						}
+						else{
+							outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
+									+ CRLF;
+						}
 						break;
 					case S_RCPT:
 						break;
@@ -104,6 +115,5 @@ public class Connection implements Runnable, RFC5322 {
 			}
 
 		}
-
 	}
 }

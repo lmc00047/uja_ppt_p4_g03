@@ -7,6 +7,7 @@ import java.net.*;
 public class Server {
 
 	public static final int TCP_SERVICE_PORT = 5000;
+	public static String TCP_CLIENT_IP = "";
 
 	static ServerSocket server = null;
 
@@ -20,6 +21,7 @@ public class Server {
 				System.out.println("Servidor> Conexión entrante desde "
 						+ newsocket.getInetAddress().toString() + ":"
 						+ newsocket.getPort());
+				TCP_CLIENT_IP = newsocket.getInetAddress().toString();
 				new Thread(new Connection(newsocket)).start();
 			}
 		} catch (IOException e) {
