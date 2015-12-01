@@ -17,10 +17,8 @@ public class SMTPMessage implements RFC5322 {
 	 */
 	public SMTPMessage(String data) {
 
-		if(data.length()>998)
-		{
+		if(data.length()>998){
 			mHasError = true;
-			
 		}
 		else
 			mHasError = parseCommand(data);
@@ -32,22 +30,54 @@ public class SMTPMessage implements RFC5322 {
 	 * @param data
 	 * @return true if there were errors
 	 */
-	protected boolean parseCommand(String data) {
-
+	protected boolean parseCommand(String data){
+		boolean caso = true;
+		//Para comandos con :
 		if (data.indexOf(":") > 0) {
 			String[] commandParts = data.split(":");// Se busca los comandos con varias palabras MAIL, FROM:
-			//TODO separar el comando para ver si hay errores
-			//No se recibe el comando HELO
-			if(commandParts[0] != "HELO"){
-				System.out.println("no helo");
-			}
+			//TODO separar el comando para buscar los comandos
 			//Se recibe el comando MAIL:
-			if(commandParts[0] == "MAIL FROM"){
-				System.out.println("no mail");
+			if(commandParts[0].equalsIgnoreCase(RFC5321.N_MAIL)){
+				System.out.println(commandParts[0]);
+				mCommand = RFC5321.N_MAIL;
+				mCommandId = RFC5321.C_MAIL;
+				caso = false;
+			}
+			//Se recibe el comando RCPT
+			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
+				System.out.println(commandParts[0]);
+				mCommand = RFC5321.N_RCPT;
+				mCommandId = RFC5321.C_RCPT;
+				caso = false;
 			}
 		}
+		//Para comandos sin :
+		//Se recibe el comando HELO
+		else if(data.equalsIgnoreCase(RFC5321.N_HELO)){
+			mCommand = RFC5321.N_HELO;
+			mCommandId = RFC5321.C_HELO;
+			caso = false;
+		}
+		//Se recibe el comando DATA
+		else if(data.equalsIgnoreCase(RFC5321.N_DATA)){
+			mCommand = RFC5321.N_DATA;
+			mCommandId = RFC5321.C_DATA;
+			caso = false;
+		}
+		//Se recibe el comando RSET
+		else if(data.equalsIgnoreCase(RFC5321.N_RSET)){
+			mCommand = RFC5321.N_RSET;
+			mCommandId = RFC5321.C_RSET;
+			caso = false;
+		}
+		//Se recibe el comando QUIT
+		else if(data.equalsIgnoreCase(RFC5321.N_QUIT)){
+			mCommand = RFC5321.N_QUIT;
+			mCommandId = RFC5321.C_QUIT;
+			caso = false;
+		}
 		
-		return false;
+		return caso;
 	}
 
 	public String toString() {

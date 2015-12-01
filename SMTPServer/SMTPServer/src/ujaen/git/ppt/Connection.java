@@ -58,6 +58,8 @@ public class Connection implements Runnable, RFC5322 {
 
 					// TODO análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
+					//Orden de los comandos para acceder a la máquina de estados
+					
 
 					// TODO: Máquina de estados del protocolo
 					switch (mEstado) {

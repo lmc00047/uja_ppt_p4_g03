@@ -16,9 +16,16 @@ public class RFC5321 {
 	
 	public static final String[] SMTP_COMMANDS = {"HELO","EHLO","MAIL FROM","RCPT TO","DATA","RSET","QUIT"};
 	
+	/** Commands Names*/
+	public static final String N_HELO = "HELO";
+	public static final String N_EHLO = "EHLO";
+	public static final String N_MAIL = "MAIL FROM";
+	public static final String N_RCPT = "RCPT TO";
+	public static final String N_DATA = "DATA";
+	public static final String N_RSET = "RSET";
+	public static final String N_QUIT = "QUIT";
 	
-	
-	/** Commands IDs*/	
+	/** Commands IDs*/
 	public static final int C_NOCOMMAND = -1;
 	public static final int C_HELO = 0;
 	public static final int C_EHLO = 1;
