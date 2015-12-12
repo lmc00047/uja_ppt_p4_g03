@@ -9,10 +9,10 @@ public class RFC5321 {
 	public static final String[] SMTP_REPLY_CODES = {"220","221","250","354"};
 	
 	public static final String[] SMPT_REPLY_MESSAGES ={ "Servicio OK","El servicio está cerrando el canal de transmisión","Ok","Inicie el envío del correo; termine con <CRLF>.<CRLF>"};
-	public static final int R_220=0;
-	public static final int R_221=1;
-	public static final int R_250=2;
-	public static final int R_354=3;
+	public static final int R_220 = 0;
+	public static final int R_221 = 1;
+	public static final int R_250 = 2;
+	public static final int R_354 = 3;
 	
 	public static final String[] SMTP_COMMANDS = {"HELO","MAIL FROM","RCPT TO","DATA","RSET","QUIT"};
 	

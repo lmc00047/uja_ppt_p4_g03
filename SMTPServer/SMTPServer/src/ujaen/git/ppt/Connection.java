@@ -70,7 +70,8 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						case S_MAIL:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
-									+ "Algo" + CRLF;
+									+ "Sender" + SP + "`" + m.getArguments() + "`" 
+									+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
 							break;
 						case S_RCPT:
 						
@@ -80,6 +81,8 @@ public class Connection implements Runnable, RFC5322 {
 						case S_RSET:
 							break;
 						case S_QUIT:
+							outputData = RFC5321.getReply(RFC5321.R_221) + SP
+									+ RFC5321.getReplyMsg(RFC5321.R_221);
 							this.mFin = true;
 							break;
 						default:
