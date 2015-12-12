@@ -26,6 +26,7 @@ public class Connection implements Runnable, RFC5322 {
 	protected int mEstado = S_HELO;;
 	private boolean mFin = false;
 	int orden = -1;
+	Boolean mail;
 
 	public Connection(Socket s) {
 		mSocket = s;
@@ -71,12 +72,25 @@ public class Connection implements Runnable, RFC5322 {
 						case S_MAIL:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
 									+ "Sender" + SP + "`" + m.getArguments() + "`" 
-									+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+									+ SP + RFC5321.getReplyMsg(RFC5321.R_250)
+									+ CRLF;
 							break;
 						case S_RCPT:
-						
+							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ "Recipient" + SP + "`" + m.getArguments()
+									+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
+									+ CRLF;
 							break;
 						case S_DATA:
+							if(!mail){
+								outputData = RFC5321.getReply(RFC5321.R_354) + SP
+										+ RFC5321.getReplyMsg(RFC5321.R_354) + CRLF;
+							}
+							else{
+								outputData = RFC5321.getReply(RFC5321.R_250) + SP
+										+ "Message accepted for delivery" + SP
+										+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+							}
 							break;
 						case S_RSET:
 							break;
@@ -94,7 +108,6 @@ public class Connection implements Runnable, RFC5322 {
 								+ CRLF;
 					}
 
-					// TODO montar la respuesta
 					// El servidor responde con lo recibido
 					output.write(outputData.getBytes());
 					output.flush();
@@ -115,6 +128,7 @@ public class Connection implements Runnable, RFC5322 {
 
 		}
 	}
+	
 	public Boolean Acceso(SMTPMessage m){
 		Boolean acceso = false;
 		if(mEstado == S_HELO && m.getCommandId() == 0 && this.orden == -1){
@@ -135,6 +149,10 @@ public class Connection implements Runnable, RFC5322 {
 			this.mEstado = S_DATA;
 			acceso = true;
 			this.orden = 3;
+			this.mail = false;
+		}
+		else if(orden == 3){
+			this.mail = true;
 		}
 		else if(m.getCommandId() == 4 && this.orden > -1){
 			this.mEstado = S_HELO;
