@@ -46,7 +46,8 @@ public class SMTPMessage implements RFC5322 {
 			}
 			//Se recibe el comando RCPT
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
-				System.out.println(commandParts[0]);
+				String[] commandArguments = data.split(" ");
+				setArguments(commandArguments[2]);
 				setCommand(RFC5321.N_RCPT);
 				checkCommand(RFC5321.N_RCPT);
 				caso = false;
@@ -77,6 +78,8 @@ public class SMTPMessage implements RFC5322 {
 			checkCommand(RFC5321.N_QUIT);
 			caso = false;
 		}
+		//Recibo datos
+		//TODO recepción de datos
 		
 		return caso;
 	}
