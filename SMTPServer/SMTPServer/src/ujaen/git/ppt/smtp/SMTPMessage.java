@@ -33,47 +33,47 @@ public class SMTPMessage implements RFC5322 {
 	protected boolean parseCommand(String data){
 		boolean caso = true;
 		//Para comandos con :
-		if (data.indexOf(":") > 0) {
+		if(data.indexOf(":") > 0){
 			String[] commandParts = data.split(":");// Se busca los comandos con varias palabras MAIL, FROM:
 			//TODO separar el comando para buscar los comandos
 			//Se recibe el comando MAIL:
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_MAIL)){
 				System.out.println(commandParts[0]);
-				mCommand = RFC5321.N_MAIL;
-				mCommandId = RFC5321.C_MAIL;
+				setCommand(RFC5321.N_MAIL);
+				checkCommand(RFC5321.N_MAIL);
 				caso = false;
 			}
 			//Se recibe el comando RCPT
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
 				System.out.println(commandParts[0]);
-				mCommand = RFC5321.N_RCPT;
-				mCommandId = RFC5321.C_RCPT;
+				setCommand(RFC5321.N_RCPT);
+				checkCommand(RFC5321.N_RCPT);
 				caso = false;
 			}
 		}
 		//Para comandos sin :
 		//Se recibe el comando HELO
 		else if(data.equalsIgnoreCase(RFC5321.N_HELO)){
-			mCommand = RFC5321.N_HELO;
-			mCommandId = RFC5321.C_HELO;
+			setCommand(RFC5321.N_HELO);
+			checkCommand(RFC5321.N_HELO);
 			caso = false;
 		}
 		//Se recibe el comando DATA
 		else if(data.equalsIgnoreCase(RFC5321.N_DATA)){
-			mCommand = RFC5321.N_DATA;
-			mCommandId = RFC5321.C_DATA;
+			setCommand(RFC5321.N_DATA);
+			checkCommand(RFC5321.N_DATA);
 			caso = false;
 		}
 		//Se recibe el comando RSET
 		else if(data.equalsIgnoreCase(RFC5321.N_RSET)){
-			mCommand = RFC5321.N_RSET;
-			mCommandId = RFC5321.C_RSET;
+			setCommand(RFC5321.N_RSET);
+			checkCommand(RFC5321.N_RSET);
 			caso = false;
 		}
 		//Se recibe el comando QUIT
 		else if(data.equalsIgnoreCase(RFC5321.N_QUIT)){
-			mCommand = RFC5321.N_QUIT;
-			mCommandId = RFC5321.C_QUIT;
+			setCommand(RFC5321.N_QUIT);
+			checkCommand(RFC5321.N_QUIT);
 			caso = false;
 		}
 		
@@ -112,11 +112,10 @@ public class SMTPMessage implements RFC5322 {
 		this.mCommandId = RFC5321.C_NOCOMMAND;
 
 		for (String c : RFC5321.SMTP_COMMANDS) {
-			if (data.compareToIgnoreCase(c) == 0)
+			if(data.compareToIgnoreCase(c) == 0){
 				this.mCommandId = index;
-
+			}
 			index++;
-
 		}
 
 		if (mCommandId != RFC5321.C_NOCOMMAND)

@@ -25,10 +25,11 @@ public class Connection implements Runnable, RFC5322 {
 	protected Socket mSocket;
 	protected int mEstado = S_HELO;;
 	private boolean mFin = false;
+	int orden = -1;
 
 	public Connection(Socket s) {
 		mSocket = s;
-		mEstado = 0;
+		mEstado = S_HELO;
 		mFin = false;
 	}
 
@@ -56,45 +57,38 @@ public class Connection implements Runnable, RFC5322 {
 
 					System.out.println("Servidor [Recibido]> " + inputData);
 
-					// TODO análisis del comando recibido
+					//Análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
-					//Orden de los comandos para acceder a la máquina de estados
 					
-
 					// TODO: Máquina de estados del protocolo
-					switch (mEstado) {
-					case S_HELO:
-						if (inputData.compareTo("HELO") == 0){
+					if(Acceso(m)){
+						switch (mEstado){
+						case S_HELO:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
 									+ "Welcome " + Server.TCP_CLIENT_IP +
 									", pleased to meet you"+ CRLF;
-							mEstado = S_MAIL;
-						}
-						else{
-							outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
-									+ CRLF;
-						}
-						break;
-					case S_MAIL:
-						if (inputData.compareTo("MAIL FROM:") == 0){
+							break;
+						case S_MAIL:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
 									+ "Algo" + CRLF;
+							break;
+						case S_RCPT:
+						
+							break;
+						case S_DATA:
+							break;
+						case S_RSET:
+							break;
+						case S_QUIT:
+							this.mFin = true;
+							break;
+						default:
+							break;
 						}
-						else{
-							outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
-									+ CRLF;
-						}
-						break;
-					case S_RCPT:
-						break;
-					case S_DATA:
-						break;
-					case S_RSET:
-						break;
-					case S_QUIT:
-						break;
-					default:
-						break;
+					}
+					else{
+						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
+								+ CRLF;
 					}
 
 					// TODO montar la respuesta
@@ -117,5 +111,38 @@ public class Connection implements Runnable, RFC5322 {
 			}
 
 		}
+	}
+	public Boolean Acceso(SMTPMessage m){
+		Boolean acceso = false;
+		if(mEstado == S_HELO && m.getCommandId() == 0 && this.orden == -1){
+			acceso = true;
+			this.orden = 0;
+		}
+		else if(mEstado == S_HELO && m.getCommandId() == 1 && this.orden == 0){
+			this.mEstado = S_MAIL;
+			acceso = true;
+			this.orden = 1;
+		}
+		else if(mEstado == S_MAIL && m.getCommandId() == 2 && this.orden == 1){
+			this.mEstado = S_RCPT;
+			acceso = true;
+			this.orden = 2;
+		}
+		else if(mEstado == S_RCPT && m.getCommandId() == 3 && this.orden == 2){
+			this.mEstado = S_DATA;
+			acceso = true;
+			this.orden = 3;
+		}
+		else if(m.getCommandId() == 4 && this.orden > -1){
+			this.mEstado = S_HELO;
+			acceso = true;
+			this.orden = 0;
+		}
+		else if(m.getCommandId() == 5){
+			this.mEstado = S_QUIT;
+			acceso = true;
+			this.orden = -1;
+		}
+		return acceso;
 	}
 }

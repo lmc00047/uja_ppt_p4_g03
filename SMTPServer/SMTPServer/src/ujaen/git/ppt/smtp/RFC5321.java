@@ -14,11 +14,10 @@ public class RFC5321 {
 	public static final int R_250=2;
 	public static final int R_354=3;
 	
-	public static final String[] SMTP_COMMANDS = {"HELO","EHLO","MAIL FROM","RCPT TO","DATA","RSET","QUIT"};
+	public static final String[] SMTP_COMMANDS = {"HELO","MAIL FROM","RCPT TO","DATA","RSET","QUIT"};
 	
 	/** Commands Names*/
 	public static final String N_HELO = "HELO";
-	public static final String N_EHLO = "EHLO";
 	public static final String N_MAIL = "MAIL FROM";
 	public static final String N_RCPT = "RCPT TO";
 	public static final String N_DATA = "DATA";
@@ -28,12 +27,11 @@ public class RFC5321 {
 	/** Commands IDs*/
 	public static final int C_NOCOMMAND = -1;
 	public static final int C_HELO = 0;
-	public static final int C_EHLO = 1;
-	public static final int C_MAIL = 2;
-	public static final int C_RCPT = 3;
-	public static final int C_DATA = 4;
-	public static final int C_RSET = 5;
-	public static final int C_QUIT = 6;
+	public static final int C_MAIL = 1;
+	public static final int C_RCPT = 2;
+	public static final int C_DATA = 3;
+	public static final int C_RSET = 4;
+	public static final int C_QUIT = 5;
 	
 	/**
 	 * Errors
