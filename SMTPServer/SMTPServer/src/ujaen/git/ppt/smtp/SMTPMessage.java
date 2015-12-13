@@ -38,16 +38,16 @@ public class SMTPMessage implements RFC5322 {
 			//TODO separar el comando para buscar los comandos
 			//Se recibe el comando MAIL:
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_MAIL)){
-				String[] commandArguments = data.split(" ");
-				setArguments(commandArguments[2]);
+				String[] commandParameters = data.split(" ");
+				setParameters(commandParameters);
 				setCommand(RFC5321.N_MAIL);
 				checkCommand(RFC5321.N_MAIL);
 				caso = false;
 			}
 			//Se recibe el comando RCPT
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
-				String[] commandArguments = data.split(" ");
-				setArguments(commandArguments[2]);
+				String[] commandParameters = data.split(" ");
+				setParameters(commandParameters);
 				setCommand(RFC5321.N_RCPT);
 				checkCommand(RFC5321.N_RCPT);
 				caso = false;

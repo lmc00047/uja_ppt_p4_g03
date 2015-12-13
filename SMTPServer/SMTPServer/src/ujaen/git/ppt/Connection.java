@@ -10,6 +10,7 @@ import java.net.SocketException;
 import ujaen.git.ppt.smtp.RFC5321;
 import ujaen.git.ppt.smtp.RFC5322;
 import ujaen.git.ppt.smtp.SMTPMessage;
+import ujaen.git.ppt.mail.*;
 
 //algo
 public class Connection implements Runnable, RFC5322 {
@@ -26,7 +27,8 @@ public class Connection implements Runnable, RFC5322 {
 	protected int mEstado = S_HELO;;
 	private boolean mFin = false;
 	int orden = -1;
-	Boolean mail;
+	Boolean mData;
+	Mailbox mailbox = null;
 
 	public Connection(Socket s) {
 		mSocket = s;
@@ -68,23 +70,36 @@ public class Connection implements Runnable, RFC5322 {
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
 									+ "Welcome " + Server.TCP_CLIENT_IP +
 									", pleased to meet you"+ CRLF;
+							this.orden = 0;
 							break;
 						case S_MAIL:
+							mailbox = new Mailbox(m.getParameters()[2]);
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
-									+ "Sender" + SP + "`" + m.getArguments() + "`" 
+									+ "Sender" + SP + "`" + m.getParameters()[2] + "`" 
 									+ SP + RFC5321.getReplyMsg(RFC5321.R_250)
 									+ CRLF;
+							this.orden = 1;
 							break;
 						case S_RCPT:
-							outputData = RFC5321.getReply(RFC5321.R_250) + SP
-									+ "Recipient" + SP + "`" + m.getArguments()
-									+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
-									+ CRLF;
+							if(mailbox.checkRecipient(m.getParameters()[2])){
+								outputData = RFC5321.getReply(RFC5321.R_250) + SP
+										+ "Recipient" + SP + "`" + m.getParameters()[2]
+										+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
+										+ CRLF;
+								this.orden = 2;
+							}
+							else{
+								outputData = RFC5321.getError(RFC5321.E_551_USERNOTLOCAL) + SP
+										+ "`" + m.getParameters()[2] + "`" + SP
+										+ RFC5321.getErrorMsg(RFC5321.E_551_USERNOTLOCAL) + CRLF;
+								this.mEstado = S_MAIL;
+							}
 							break;
 						case S_DATA:
-							if(!mail){
+							if(!mData){
 								outputData = RFC5321.getReply(RFC5321.R_354) + SP
 										+ RFC5321.getReplyMsg(RFC5321.R_354) + CRLF;
+								this.orden = 3;
 							}
 							else{
 								outputData = RFC5321.getReply(RFC5321.R_250) + SP
@@ -93,11 +108,16 @@ public class Connection implements Runnable, RFC5322 {
 							}
 							break;
 						case S_RSET:
+							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ RFC5321.getReplyMsg(RFC5321.R_250);
+							this.mEstado = S_HELO;
+							this.orden = 0;
 							break;
 						case S_QUIT:
 							outputData = RFC5321.getReply(RFC5321.R_221) + SP
 									+ RFC5321.getReplyMsg(RFC5321.R_221);
 							this.mFin = true;
+							this.orden = -1;
 							break;
 						default:
 							break;
@@ -133,36 +153,30 @@ public class Connection implements Runnable, RFC5322 {
 		Boolean acceso = false;
 		if(mEstado == S_HELO && m.getCommandId() == 0 && this.orden == -1){
 			acceso = true;
-			this.orden = 0;
 		}
 		else if(mEstado == S_HELO && m.getCommandId() == 1 && this.orden == 0){
 			this.mEstado = S_MAIL;
 			acceso = true;
-			this.orden = 1;
 		}
 		else if(mEstado == S_MAIL && m.getCommandId() == 2 && this.orden == 1){
 			this.mEstado = S_RCPT;
 			acceso = true;
-			this.orden = 2;
 		}
 		else if(mEstado == S_RCPT && m.getCommandId() == 3 && this.orden == 2){
 			this.mEstado = S_DATA;
 			acceso = true;
-			this.orden = 3;
-			this.mail = false;
+			this.mData = false;
 		}
 		else if(orden == 3){
-			this.mail = true;
+			this.mData = true;
 		}
 		else if(m.getCommandId() == 4 && this.orden > -1){
-			this.mEstado = S_HELO;
+			this.mEstado = S_RSET;
 			acceso = true;
-			this.orden = 0;
 		}
 		else if(m.getCommandId() == 5){
 			this.mEstado = S_QUIT;
 			acceso = true;
-			this.orden = -1;
 		}
 		return acceso;
 	}
