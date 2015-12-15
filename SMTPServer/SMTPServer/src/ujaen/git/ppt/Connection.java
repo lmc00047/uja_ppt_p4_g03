@@ -28,6 +28,7 @@ public class Connection implements Runnable, RFC5322 {
 	private boolean mFin = false;
 	int orden = -1;
 	Boolean mData;
+	Mail mail = null;
 	Mailbox mailbox = null;
 
 	public Connection(Socket s) {
@@ -63,7 +64,6 @@ public class Connection implements Runnable, RFC5322 {
 					//Análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
 					
-					// TODO: Máquina de estados del protocolo
 					if(Acceso(m)){
 						switch (mEstado){
 						case S_HELO:
@@ -73,7 +73,6 @@ public class Connection implements Runnable, RFC5322 {
 							this.orden = 0;
 							break;
 						case S_MAIL:
-							mailbox = new Mailbox(m.getParameters()[2]);
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
 									+ "Sender" + SP + "`" + m.getParameters()[2] + "`" 
 									+ SP + RFC5321.getReplyMsg(RFC5321.R_250)
@@ -82,6 +81,7 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						case S_RCPT:
 							if(mailbox.checkRecipient(m.getParameters()[2])){
+								mail.addRecipient(m.getParameters()[2]);
 								outputData = RFC5321.getReply(RFC5321.R_250) + SP
 										+ "Recipient" + SP + "`" + m.getParameters()[2]
 										+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
@@ -102,6 +102,14 @@ public class Connection implements Runnable, RFC5322 {
 								this.orden = 3;
 							}
 							else{
+								//TODO función para limpiar la ip
+								//TODO hacer una función que analice lo que se recibe, si es solo un punto, es el fin del mensaje
+								mail = new Mail();
+								mail.setMailfrom(m.getParameters()[2]);
+								mail.setIp(Ip(Server.TCP_CLIENT_IP));
+								mail.setHost(Ip(Server.TCP_CLIENT_IP));
+								mail.addMailLine(m.getArguments());
+								mail.setSize();
 								outputData = RFC5321.getReply(RFC5321.R_250) + SP
 										+ "Message accepted for delivery" + SP
 										+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
@@ -129,6 +137,7 @@ public class Connection implements Runnable, RFC5322 {
 					}
 
 					// El servidor responde con lo recibido
+//					mailbox = new Mailbox(mail);
 					output.write(outputData.getBytes());
 					output.flush();
 
@@ -147,6 +156,18 @@ public class Connection implements Runnable, RFC5322 {
 			}
 
 		}
+	}
+	public String Ip(String data){
+		String ip = "";
+		if(data.indexOf(":") > 0){
+			String[] Parts = data.split(":");
+			ip = Parts[0];
+			ip = ip.substring(1, ip.length());
+		}
+		else{
+			ip = ip.substring(1, ip.length());
+		}
+		return ip;
 	}
 	
 	public Boolean Acceso(SMTPMessage m){

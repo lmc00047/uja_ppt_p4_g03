@@ -63,8 +63,8 @@ public class Mail implements RFC5322{
 		return mSize;
 	}
 
-	public void setSize(int size) {
-		this.mSize = size;
+	public void setSize() {
+		this.mSize = mMail.length();;
 	}
 	
 	public static String getTop(String message,int lines)

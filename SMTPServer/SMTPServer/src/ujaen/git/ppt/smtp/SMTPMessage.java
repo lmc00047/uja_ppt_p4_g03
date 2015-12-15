@@ -40,7 +40,6 @@ public class SMTPMessage implements RFC5322 {
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_MAIL)){
 				String[] commandParameters = data.split(" ");
 				setParameters(commandParameters);
-				setCommand(RFC5321.N_MAIL);
 				checkCommand(RFC5321.N_MAIL);
 				caso = false;
 			}
@@ -48,7 +47,6 @@ public class SMTPMessage implements RFC5322 {
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
 				String[] commandParameters = data.split(" ");
 				setParameters(commandParameters);
-				setCommand(RFC5321.N_RCPT);
 				checkCommand(RFC5321.N_RCPT);
 				caso = false;
 			}
@@ -56,30 +54,29 @@ public class SMTPMessage implements RFC5322 {
 		//Para comandos sin :
 		//Se recibe el comando HELO
 		else if(data.equalsIgnoreCase(RFC5321.N_HELO)){
-			setCommand(RFC5321.N_HELO);
 			checkCommand(RFC5321.N_HELO);
 			caso = false;
 		}
 		//Se recibe el comando DATA
 		else if(data.equalsIgnoreCase(RFC5321.N_DATA)){
-			setCommand(RFC5321.N_DATA);
 			checkCommand(RFC5321.N_DATA);
 			caso = false;
 		}
 		//Se recibe el comando RSET
 		else if(data.equalsIgnoreCase(RFC5321.N_RSET)){
-			setCommand(RFC5321.N_RSET);
 			checkCommand(RFC5321.N_RSET);
 			caso = false;
 		}
 		//Se recibe el comando QUIT
 		else if(data.equalsIgnoreCase(RFC5321.N_QUIT)){
-			setCommand(RFC5321.N_QUIT);
 			checkCommand(RFC5321.N_QUIT);
 			caso = false;
 		}
+		else{
+			setArguments(data);
+			caso = false;
+		}
 		//Recibo datos
-		//TODO recepción de datos
 		
 		return caso;
 	}
