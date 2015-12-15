@@ -102,7 +102,6 @@ public class Connection implements Runnable, RFC5322 {
 								this.orden = 3;
 							}
 							else{
-								//TODO función para limpiar la ip
 								//TODO hacer una función que analice lo que se recibe, si es solo un punto, es el fin del mensaje
 								mail = new Mail();
 								mail.setMailfrom(m.getParameters()[2]);
@@ -157,6 +156,15 @@ public class Connection implements Runnable, RFC5322 {
 
 		}
 	}
+	public Boolean Punto(String data){
+		if(data.equalsIgnoreCase(".")){
+			return true;
+		}
+		else{
+			return false;
+		}
+	}
+	
 	public String Ip(String data){
 		String ip = "";
 		if(data.indexOf(":") > 0){
