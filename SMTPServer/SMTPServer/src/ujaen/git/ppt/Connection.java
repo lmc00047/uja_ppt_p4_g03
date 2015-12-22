@@ -28,7 +28,7 @@ public class Connection implements Runnable, RFC5322 {
 	private boolean mFin = false;
 	int orden = -1;
 	Boolean mData;
-	Mail mail = null;
+	Mail mail = new Mail();
 	Mailbox mailbox = null;
 
 	public Connection(Socket s) {
@@ -103,15 +103,21 @@ public class Connection implements Runnable, RFC5322 {
 							}
 							else{
 								//TODO hacer una función que analice lo que se recibe, si es solo un punto, es el fin del mensaje
-								mail = new Mail();
-								mail.setMailfrom(m.getParameters()[2]);
-								mail.setIp(Ip(Server.TCP_CLIENT_IP));
-								mail.setHost(Ip(Server.TCP_CLIENT_IP));
-								mail.addMailLine(m.getArguments());
-								mail.setSize();
-								outputData = RFC5321.getReply(RFC5321.R_250) + SP
-										+ "Message accepted for delivery" + SP
-										+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+								if(!Punto(inputData)){
+									//función para más de un remitente
+									mail.setMailfrom(m.getParameters()[2]);
+									mail.addMailLine(m.getArguments());
+								}
+								else{
+									//TODO no sé si está bien
+									mail.setIp(Ip(Server.TCP_CLIENT_IP));
+									mail.setHost(Ip(Server.TCP_CLIENT_IP));
+									mail.setSize();
+									mailbox.AddMail(mail);
+									outputData = RFC5321.getReply(RFC5321.R_250) + SP
+											+ "Message accepted for delivery" + SP
+											+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+								}
 							}
 							break;
 						case S_RSET:
@@ -156,6 +162,7 @@ public class Connection implements Runnable, RFC5322 {
 
 		}
 	}
+	
 	public Boolean Punto(String data){
 		if(data.equalsIgnoreCase(".")){
 			return true;

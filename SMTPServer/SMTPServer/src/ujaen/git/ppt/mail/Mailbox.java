@@ -61,7 +61,11 @@ public class Mailbox extends ArrayList<Mail> {
 
 		this.add(mail);
 		this.newMail(mail.getMail());
-
+	}
+	
+	public void AddMail(Mail mail){
+		this.add(mail);
+		this.newMail(mail.getMail());
 	}
 
 	/**
