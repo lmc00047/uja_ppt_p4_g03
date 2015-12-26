@@ -55,16 +55,13 @@ public class Mailbox extends ArrayList<Mail> {
 	 * Se inicializa el buzón con el nombre del usuario
 	 * 
 	 * @param user
+	 * @throws IOException 
 	 */
-	public Mailbox(Mail mail) {
+	public Mailbox(Mail mail) throws IOException {
 		mUser = mail.getRcptto();
 
 		this.add(mail);
-		this.newMail(mail.getMail());
-	}
-	
-	public void AddMail(Mail mail){
-		this.add(mail);
+		//Falla
 		this.newMail(mail.getMail());
 	}
 
@@ -100,6 +97,13 @@ public class Mailbox extends ArrayList<Mail> {
 
 		if (isOpenned()) {
 			File file = new File(mUser);
+			Boolean exists = file.exists();
+			Boolean isDirectory = file.exists();
+			
+			//Pruebo
+			File fille = new File("paco");
+			fille.mkdir();
+			
 			if (file.exists() && file.isDirectory()) {
 				File[] files = file.listFiles();
 
@@ -135,10 +139,12 @@ public class Mailbox extends ArrayList<Mail> {
 	 * @param mail
 	 *            String that contains the email in text form
 	 * @return true if the file was created, false otherwise
+	 * @throws IOException 
 	 */
-	public boolean newMail(String mail) {
+	public boolean newMail(String mail) throws IOException {
 
 		File file = new File(mUser);
+		
 		if (file.exists() && file.isDirectory()) {
 			File[] files = file.listFiles();
 

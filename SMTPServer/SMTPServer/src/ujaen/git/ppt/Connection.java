@@ -27,7 +27,7 @@ public class Connection implements Runnable, RFC5322 {
 	protected int mEstado = S_HELO;;
 	private boolean mFin = false;
 	int orden = -1;
-	Boolean mData;
+	Boolean mData, mSend = true;
 	Mail mail = new Mail();
 	Mailbox mailbox = null;
 
@@ -81,7 +81,6 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						case S_RCPT:
 							if(mailbox.checkRecipient(m.getParameters()[2])){
-								mail.addRecipient(m.getParameters()[2]);
 								outputData = RFC5321.getReply(RFC5321.R_250) + SP
 										+ "Recipient" + SP + "`" + m.getParameters()[2]
 										+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
@@ -102,21 +101,22 @@ public class Connection implements Runnable, RFC5322 {
 								this.orden = 3;
 							}
 							else{
-								//TODO hacer una función que analice lo que se recibe, si es solo un punto, es el fin del mensaje
 								if(!Punto(inputData)){
-									//función para más de un remitente
-									mail.setMailfrom(m.getParameters()[2]);
-									mail.addMailLine(m.getArguments());
+									AddtoMail(inputData);
+									mSend = false;
 								}
 								else{
-									//TODO no sé si está bien
 									mail.setIp(Ip(Server.TCP_CLIENT_IP));
 									mail.setHost(Ip(Server.TCP_CLIENT_IP));
 									mail.setSize();
-									mailbox.AddMail(mail);
+									mailbox = new Mailbox(mail);
 									outputData = RFC5321.getReply(RFC5321.R_250) + SP
 											+ "Message accepted for delivery" + SP
 											+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+									//Una vez enviado el mail volvemos a las condiciones de después de HELO
+									this.orden = 0;
+									this.mEstado = S_HELO;
+									mSend = true;
 								}
 							}
 							break;
@@ -141,10 +141,10 @@ public class Connection implements Runnable, RFC5322 {
 								+ CRLF;
 					}
 
-					// El servidor responde con lo recibido
-//					mailbox = new Mailbox(mail);
-					output.write(outputData.getBytes());
-					output.flush();
+					if(this.mSend){
+						output.write(outputData.getBytes());
+						output.flush();
+					}
 
 				}//Fin del while
 				System.out.println("Servidor [Conexión finalizada]> "
@@ -172,15 +172,39 @@ public class Connection implements Runnable, RFC5322 {
 		}
 	}
 	
+	public void AddtoMail(String data){
+		//Llegan cabeceras
+		if(data.indexOf(":") > 0){
+			String[] commandParts = data.split(":");
+			//Se recibe To:
+			if(commandParts[0].equalsIgnoreCase("To")){
+				this.mail.setMailfrom(data.substring(4));
+				this.mail.addMailLine(data);
+			}
+			//Se recibe From:
+			else if(commandParts[0].equalsIgnoreCase("From")){
+				this.mail.addRecipient(data.substring(6));
+				this.mail.addMailLine(data);
+			}
+			else if(commandParts[0].equalsIgnoreCase("Subject")){
+				this.mail.addMailLine(data);
+			}
+		}
+		//Llegan datos
+		else{
+			this.mail.addMailLine(data);
+		}
+	}
+	
 	public String Ip(String data){
 		String ip = "";
 		if(data.indexOf(":") > 0){
 			String[] Parts = data.split(":");
 			ip = Parts[0];
-			ip = ip.substring(1, ip.length());
+			ip = ip.substring(1);
 		}
 		else{
-			ip = ip.substring(1, ip.length());
+			ip = data.substring(1);
 		}
 		return ip;
 	}
@@ -204,6 +228,7 @@ public class Connection implements Runnable, RFC5322 {
 			this.mData = false;
 		}
 		else if(orden == 3){
+			acceso = true;
 			this.mData = true;
 		}
 		else if(m.getCommandId() == 4 && this.orden > -1){

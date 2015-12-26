@@ -116,9 +116,13 @@ public class Mail implements RFC5322{
 		mMail=mMail+line+CRLF;
 	}
 	
-	public void addRecipient(String recipient)
-	{
-		this.mRcptto=this.mRcptto+";"+recipient;
+	public void addRecipient(String recipient){
+		if(this.mRcptto.isEmpty()){
+			setRcptto(recipient);
+		}
+		else{
+			this.mRcptto=this.mRcptto+";"+recipient;
+		}
 	}
 	
 

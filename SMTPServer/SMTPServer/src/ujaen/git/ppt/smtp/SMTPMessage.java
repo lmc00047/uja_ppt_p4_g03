@@ -35,7 +35,6 @@ public class SMTPMessage implements RFC5322 {
 		//Para comandos con :
 		if(data.indexOf(":") > 0){
 			String[] commandParts = data.split(":");// Se busca los comandos con varias palabras MAIL, FROM:
-			//TODO separar el comando para buscar los comandos
 			//Se recibe el comando MAIL:
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_MAIL)){
 				String[] commandParameters = data.split(" ");
