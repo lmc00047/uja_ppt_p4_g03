@@ -56,6 +56,8 @@ public class Connection implements Runnable, RFC5322 {
 						+ RFC5321.MSG_WELCOME + RFC5322.CRLF;
 				output.write(response.getBytes());
 				output.flush();
+				
+				
 
 				while (!mFin && ((inputData = input.readLine()) != null)){
 
@@ -106,9 +108,10 @@ public class Connection implements Runnable, RFC5322 {
 									mSend = false;
 								}
 								else{
-									mail.setIp(Ip(Server.TCP_CLIENT_IP));
-									mail.setHost(Ip(Server.TCP_CLIENT_IP));
+									mail.setIp(Server.TCP_CLIENT_IP);
+									mail.setHost(Server.TCP_CLIENT_IP);
 									mail.setSize();
+									mail.Headers();
 									mailbox = new Mailbox(mail);
 									outputData = RFC5321.getReply(RFC5321.R_250) + SP
 											+ "Message accepted for delivery" + SP
@@ -176,8 +179,12 @@ public class Connection implements Runnable, RFC5322 {
 		//Llegan cabeceras
 		if(data.indexOf(":") > 0){
 			String[] commandParts = data.split(":");
+			//Se recibe Date:
+			if(commandParts[0].equalsIgnoreCase("Date")){
+				this.mail.addMailLine(data);
+			}
 			//Se recibe To:
-			if(commandParts[0].equalsIgnoreCase("To")){
+			else if(commandParts[0].equalsIgnoreCase("To")){
 				this.mail.setMailfrom(data.substring(4));
 				this.mail.addMailLine(data);
 			}
@@ -194,19 +201,6 @@ public class Connection implements Runnable, RFC5322 {
 		else{
 			this.mail.addMailLine(data);
 		}
-	}
-	
-	public String Ip(String data){
-		String ip = "";
-		if(data.indexOf(":") > 0){
-			String[] Parts = data.split(":");
-			ip = Parts[0];
-			ip = ip.substring(1);
-		}
-		else{
-			ip = data.substring(1);
-		}
-		return ip;
 	}
 	
 	public Boolean Acceso(SMTPMessage m){

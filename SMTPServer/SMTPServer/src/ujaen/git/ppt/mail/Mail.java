@@ -3,7 +3,15 @@ package ujaen.git.ppt.mail;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 
+import ujaen.git.ppt.Server;
 import ujaen.git.ppt.smtp.RFC5322;
 
 
@@ -160,9 +168,52 @@ public class Mail implements RFC5322{
 		this.mIp = ip;
 	}
 
+	public void addHeader(String header, String value){
+		mMail = header + ": " + value + CRLF + mMail;
+	}
 	
-	public void addHeader(String header, String value) {
-		//TODO Método que añada cabeceras al correo
+	public void Headers(){
+		Boolean message_id = false;
 		
+		String[] Headers = mMail.split("\r\n");
+		for(int i = 0; i < Headers.length; i++){
+			String[] Head = Headers[i].split(" ");
+			if(Head[0].compareToIgnoreCase("Message-ID:") == 0){
+				message_id = true;
+			}
+		}
+		Calendar calendar = GregorianCalendar.getInstance();
+		if(!message_id){
+			addHeader("Message-ID",messageId(Fecha(calendar)));
+		}
+		addHeader("Received",receivedFrom(calendar.getTime().toString()));
+		addHeader("Received",receivedBy(calendar.getTime().toString()));
+	}
+	
+	public String serverIp(){
+		try {
+			return InetAddress.getLocalHost().getHostAddress().toString();
+		} catch (UnknownHostException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
+	public String receivedFrom(String date){
+		return "from " + Server.TCP_CLIENT_IP + ";" + date;
+	}
+	
+	public String receivedBy(String date){
+		return "by " + serverIp() + ";" + date;
+	}
+	
+	public String messageId(String date){
+		return date + "." + Server.TCP_CONNECTION_ID + "." + serverIp();
+	}
+	
+	public String Fecha(Calendar calendar){
+		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHHmmss");
+		return date.format(calendar.getTime());
 	}
 }
