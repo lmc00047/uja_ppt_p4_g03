@@ -46,10 +46,14 @@ public class SMTPMessage implements RFC5322 {
 				this.mdata = false;
 			}
 			//Se recibe el comando RCPT
-			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
+			else if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
 				String[] commandParameters = data.split(" ");
 				setParameters(commandParameters);
 				checkCommand(RFC5321.N_RCPT);
+				caso = false;
+			}
+			else if(Connection.Estado() == Connection.S_DATA){
+				setArguments(data);
 				caso = false;
 			}
 		}

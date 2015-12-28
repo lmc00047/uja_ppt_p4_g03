@@ -39,7 +39,7 @@ public class Mailbox extends ArrayList<Mail> {
 	/**
 	 * Identificador de usuario
 	 */
-	protected String mUser = "";
+	protected static String mUser = "";
 
 	/**
 	 * Se inicializa el buzón con el nombre del usuario
@@ -74,7 +74,7 @@ public class Mailbox extends ArrayList<Mail> {
 	public boolean open(String key) {
 		File file = new File(mUser);
 		if (file.isDirectory()) {
-			if (checkKey(key)) {
+			if (checkKey(mUser, key)) {
 
 				mOpenned = true;
 				getMessages();
@@ -97,12 +97,6 @@ public class Mailbox extends ArrayList<Mail> {
 
 		if (isOpenned()) {
 			File file = new File(mUser);
-			Boolean exists = file.exists();
-			Boolean isDirectory = file.exists();
-			
-			//Pruebo
-			File fille = new File("paco");
-			fille.mkdir();
 			
 			if (file.exists() && file.isDirectory()) {
 				File[] files = file.listFiles();
@@ -267,8 +261,8 @@ public class Mailbox extends ArrayList<Mail> {
 	 *            Clave a comprobar
 	 * @return TRUE si las claves son correctas, FALSE en otro caso.
 	 */
-	public boolean checkKey(String pass) {
-		File file = new File(mUser + ".key");
+	public static boolean checkKey(String user, String pass) {
+		File file = new File(user + ".key");
 		if (file.exists()) {
 			byte[] data = new byte[(int) file.length()];
 
