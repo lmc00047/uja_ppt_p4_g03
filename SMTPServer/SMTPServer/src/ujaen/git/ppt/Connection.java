@@ -24,11 +24,11 @@ public class Connection implements Runnable, RFC5322 {
 	public static final int S_QUIT = 6;
 
 	protected Socket mSocket;
-	protected int mEstado = S_HELO;;
+	protected static int mEstado = S_HELO;;
 	private boolean mFin = false;
 	int orden = -1;
 	Boolean mData, mSend = true;
-	Mail mail = new Mail();
+	Mail mail = null;
 	Mailbox mailbox = null;
 
 	public Connection(Socket s) {
@@ -53,6 +53,7 @@ public class Connection implements Runnable, RFC5322 {
 
 				// Envío del mensaje de bienvenida
 				String response = RFC5321.getReply(RFC5321.R_220) + SP
+						+ RFC5321.getReplyMsg(RFC5321.R_220) + SP
 						+ RFC5321.MSG_WELCOME + RFC5322.CRLF;
 				output.write(response.getBytes());
 				output.flush();
@@ -65,39 +66,40 @@ public class Connection implements Runnable, RFC5322 {
 
 					//Análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
-					
-					if(Acceso(m)){
+					if(Acceso(m) && !m.hasError()){
 						switch (mEstado){
 						case S_HELO:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ RFC5321.getReplyMsg(RFC5321.R_250) + SP
 									+ "Welcome " + Server.TCP_CLIENT_IP +
 									", pleased to meet you"+ CRLF;
 							this.orden = 0;
 							break;
 						case S_MAIL:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
+									+ RFC5321.getReplyMsg(RFC5321.R_250) + SP
 									+ "Sender" + SP + "`" + m.getParameters()[2] + "`" 
-									+ SP + RFC5321.getReplyMsg(RFC5321.R_250)
 									+ CRLF;
 							this.orden = 1;
 							break;
 						case S_RCPT:
 							if(mailbox.checkRecipient(m.getParameters()[2])){
 								outputData = RFC5321.getReply(RFC5321.R_250) + SP
+										+ RFC5321.getReplyMsg(RFC5321.R_250) + SP
 										+ "Recipient" + SP + "`" + m.getParameters()[2]
-										+ "`" + SP + RFC5321.getReplyMsg(RFC5321.R_250)
 										+ CRLF;
 								this.orden = 2;
 							}
 							else{
 								outputData = RFC5321.getError(RFC5321.E_551_USERNOTLOCAL) + SP
-										+ "`" + m.getParameters()[2] + "`" + SP
-										+ RFC5321.getErrorMsg(RFC5321.E_551_USERNOTLOCAL) + CRLF;
+										+ RFC5321.getErrorMsg(RFC5321.E_551_USERNOTLOCAL) + SP
+										+ "`" + m.getParameters()[2] + "`" + CRLF;
 								this.mEstado = S_MAIL;
 							}
 							break;
 						case S_DATA:
 							if(!mData){
+								mail = new Mail();
 								outputData = RFC5321.getReply(RFC5321.R_354) + SP
 										+ RFC5321.getReplyMsg(RFC5321.R_354) + CRLF;
 								this.orden = 3;
@@ -114,8 +116,8 @@ public class Connection implements Runnable, RFC5322 {
 									mail.Headers();
 									mailbox = new Mailbox(mail);
 									outputData = RFC5321.getReply(RFC5321.R_250) + SP
-											+ "Message accepted for delivery" + SP
-											+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
+											+ RFC5321.getReplyMsg(RFC5321.R_250) + SP
+											+ "Message accepted for delivery" + CRLF;
 									//Una vez enviado el mail volvemos a las condiciones de después de HELO
 									this.orden = 0;
 									this.mEstado = S_HELO;
@@ -125,13 +127,13 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						case S_RSET:
 							outputData = RFC5321.getReply(RFC5321.R_250) + SP
-									+ RFC5321.getReplyMsg(RFC5321.R_250);
+									+ RFC5321.getReplyMsg(RFC5321.R_250) + CRLF;
 							this.mEstado = S_HELO;
 							this.orden = 0;
 							break;
 						case S_QUIT:
 							outputData = RFC5321.getReply(RFC5321.R_221) + SP
-									+ RFC5321.getReplyMsg(RFC5321.R_221);
+									+ RFC5321.getReplyMsg(RFC5321.R_221) + CRLF;
 							this.mFin = true;
 							this.orden = -1;
 							break;
@@ -139,9 +141,13 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						}
 					}
+					else if(!m.hasError()){
+						outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE) + SP
+								+ RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + CRLF;
+					}
 					else{
-						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) 
-								+ CRLF;
+						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) + SP
+								+ RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + CRLF;
 					}
 
 					if(this.mSend){
@@ -174,7 +180,6 @@ public class Connection implements Runnable, RFC5322 {
 			return false;
 		}
 	}
-	
 	public void AddtoMail(String data){
 		//Llegan cabeceras
 		if(data.indexOf(":") > 0){
@@ -202,7 +207,6 @@ public class Connection implements Runnable, RFC5322 {
 			this.mail.addMailLine(data);
 		}
 	}
-	
 	public Boolean Acceso(SMTPMessage m){
 		Boolean acceso = false;
 		if(mEstado == S_HELO && m.getCommandId() == 0 && this.orden == -1){
@@ -234,5 +238,8 @@ public class Connection implements Runnable, RFC5322 {
 			acceso = true;
 		}
 		return acceso;
+	}
+	public static int Estado(){
+		return mEstado;
 	}
 }

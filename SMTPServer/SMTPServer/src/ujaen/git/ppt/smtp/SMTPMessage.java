@@ -1,5 +1,6 @@
 package ujaen.git.ppt.smtp;
 
+import ujaen.git.ppt.Connection;
 
 public class SMTPMessage implements RFC5322 {
 
@@ -9,6 +10,7 @@ public class SMTPMessage implements RFC5322 {
 	protected String[] mParameters = null;
 	protected boolean mHasError = false;
 	protected int mErrorCode = 0;
+	protected boolean mdata = false;
 
 	/**
 	 * The input string is processed to analyze the format of the message
@@ -41,6 +43,7 @@ public class SMTPMessage implements RFC5322 {
 				setParameters(commandParameters);
 				checkCommand(RFC5321.N_MAIL);
 				caso = false;
+				this.mdata = false;
 			}
 			//Se recibe el comando RCPT
 			if(commandParts[0].equalsIgnoreCase(RFC5321.N_RCPT)){
@@ -60,18 +63,20 @@ public class SMTPMessage implements RFC5322 {
 		else if(data.equalsIgnoreCase(RFC5321.N_DATA)){
 			checkCommand(RFC5321.N_DATA);
 			caso = false;
+			this.mdata = true;
 		}
 		//Se recibe el comando RSET
 		else if(data.equalsIgnoreCase(RFC5321.N_RSET)){
 			checkCommand(RFC5321.N_RSET);
 			caso = false;
+			this.mdata = false;
 		}
 		//Se recibe el comando QUIT
 		else if(data.equalsIgnoreCase(RFC5321.N_QUIT)){
 			checkCommand(RFC5321.N_QUIT);
 			caso = false;
 		}
-		else{
+		else if(Connection.Estado() == Connection.S_DATA){
 			setArguments(data);
 			caso = false;
 		}
