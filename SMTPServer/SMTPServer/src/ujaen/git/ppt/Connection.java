@@ -65,6 +65,8 @@ public class Connection implements Runnable, RFC5322 {
 
 					//Análisis del comando recibido
 					SMTPMessage m = new SMTPMessage(inputData);
+					
+					//Máquina de estados
 					if(Acceso(m) && !m.hasError()){
 						switch (mEstado){
 						case S_HELO:
@@ -75,6 +77,8 @@ public class Connection implements Runnable, RFC5322 {
 							this.orden = 0;
 							break;
 						case S_MAIL:
+							//La sobrecarga de control permite que la aplicación no se cuelgue si no se introduce
+							//usuario y clave.
 							if(m.getParameters().length != 4){
 								if(m.getParameters().length == 2){
 									outputData = RFC5321.getError(RFC5321.E_551_USERNOTLOCAL) + SP
@@ -104,6 +108,7 @@ public class Connection implements Runnable, RFC5322 {
 							}
 							break;
 						case S_RCPT:
+							//Igual que S_MAIL
 							if(m.getParameters().length != 3){
 								outputData = RFC5321.getError(RFC5321.E_551_USERNOTLOCAL) + SP
 										+ RFC5321.getErrorMsg(RFC5321.E_551_USERNOTLOCAL) + SP
@@ -125,17 +130,21 @@ public class Connection implements Runnable, RFC5322 {
 							}
 							break;
 						case S_DATA:
+							//Este es el caso de que se envíe el comando DATA
 							if(!mData){
 								mail = new Mail();
 								outputData = RFC5321.getReply(RFC5321.R_354) + SP
 										+ RFC5321.getReplyMsg(RFC5321.R_354) + CRLF;
 								this.orden = 3;
 							}
+							//Este es el caso de que se envíen los datos
 							else{
+								//Si no se recibe el .
 								if(!Punto(inputData)){
 									AddtoMail(inputData);
 									mSend = false;
 								}
+								//Cuando se recibe .
 								else{
 									mail.setIp(Server.TCP_CLIENT_IP);
 									mail.setHost(Server.TCP_CLIENT_IP);
@@ -168,15 +177,17 @@ public class Connection implements Runnable, RFC5322 {
 							break;
 						}
 					}
+					//Si se envía un comando válido pero no en el orden correcto.
 					else if(!m.hasError()){
 						outputData = RFC5321.getError(RFC5321.E_503_BADSEQUENCE) + SP
 								+ RFC5321.getErrorMsg(RFC5321.E_503_BADSEQUENCE) + CRLF;
 					}
+					//Si lo que se recibe no está bien escrito.
 					else{
 						outputData = RFC5321.getError(RFC5321.E_500_SINTAXERROR) + SP
 								+ RFC5321.getErrorMsg(RFC5321.E_500_SINTAXERROR) + CRLF;
 					}
-
+					//Permite enviar datos solo cuando se desea.
 					if(this.mSend){
 						output.write(outputData.getBytes());
 						output.flush();
@@ -198,7 +209,7 @@ public class Connection implements Runnable, RFC5322 {
 
 		}
 	}
-	
+	//Detecta la recepción de .
 	public Boolean Punto(String data){
 		if(data.equalsIgnoreCase(".")){
 			return true;
@@ -207,6 +218,7 @@ public class Connection implements Runnable, RFC5322 {
 			return false;
 		}
 	}
+	
 	public void AddtoMail(String data){
 		//Llegan cabeceras
 		if(data.indexOf(":") > 0){
@@ -233,6 +245,7 @@ public class Connection implements Runnable, RFC5322 {
 					this.mail.addMailLine(data);
 				}
 			}
+			//Se recibe Subject:
 			else if(commandParts[0].equalsIgnoreCase("Subject")){
 				this.mail.addMailLine(data);
 			}
@@ -242,6 +255,8 @@ public class Connection implements Runnable, RFC5322 {
 			this.mail.addMailLine(data);
 		}
 	}
+	//Autoriza el acceso a la máquina de estados en función del estado actual, el comando recibido
+	//y el orden de estos comandos.
 	public Boolean Acceso(SMTPMessage m){
 		Boolean acceso = false;
 		if(mEstado == S_HELO && m.getCommandId() == 0 && this.orden == -1){
@@ -274,6 +289,7 @@ public class Connection implements Runnable, RFC5322 {
 		}
 		return acceso;
 	}
+	//devuelve el estado actual de la maquina de estados.
 	public static int Estado(){
 		return mEstado;
 	}

@@ -33,6 +33,8 @@ public class Server {
 
 	}
 	
+	//Esto lo uso porque me coge la ip como /xxx.xxx.xxx.xxx así que le quito /
+	//también permite quitar el puerto si lo incluyera.
 	public static String Ip(String data){
 		String ip = "";
 		if(data.indexOf(":") > 0){

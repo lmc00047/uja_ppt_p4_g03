@@ -116,7 +116,6 @@ public class Mail implements RFC5322{
 	 * Añade una nueva línea al correo
 	 * @param line Nueva línea de correo sin CRLF
 	 */
-	
 	public void addMailLine(String line)
 	{
 		mMail=mMail+line+CRLF;
@@ -166,10 +165,11 @@ public class Mail implements RFC5322{
 		this.mIp = ip;
 	}
 
+	//Monta las cabeceras.
 	public void addHeader(String header, String value){
 		mMail = header + ": " + value + CRLF + mMail;
 	}
-	
+	//Añade las cabeceras al mensaje.
 	public void Headers(){
 		Boolean message_id = false;
 		
@@ -187,7 +187,7 @@ public class Mail implements RFC5322{
 		addHeader("Received",receivedFrom(calendar.getTime().toString()));
 		addHeader("Received",receivedBy(calendar.getTime().toString()));
 	}
-	
+	//Devuelve la ip del servidor
 	public String serverIp(){
 		try {
 			return InetAddress.getLocalHost().getHostAddress().toString();
@@ -197,19 +197,19 @@ public class Mail implements RFC5322{
 			return "";
 		}
 	}
-	
+	//Monta la infromación de la cabecera received para from.
 	public String receivedFrom(String date){
 		return "from " + Server.TCP_CLIENT_IP + ";" + date;
 	}
-	
+	//Monta la infromación de la cabecera received para by.
 	public String receivedBy(String date){
 		return "by " + serverIp() + ";" + date;
 	}
-	
+	//Monta la información de la cabecera Message-ID
 	public String messageId(String date){
 		return date + "." + Server.TCP_CONNECTION_ID + "." + serverIp();
 	}
-	
+	//Devuelve la fecha.
 	public String Fecha(Calendar calendar){
 		SimpleDateFormat date = new SimpleDateFormat("yyyyMMddHHmmss");
 		return date.format(calendar.getTime());
